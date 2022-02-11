@@ -1,0 +1,42 @@
+models:
+  - name: yolox
+
+    launchers:
+      - framework: dlsdk
+        adapter:
+          type: yolox
+          coords: 4
+          classes: 80
+
+    datasets:
+      - name: ms_coco_detection_80_class_without_background
+
+        preprocessing:
+          - type: resize
+            aspect_ratio_scale: frcnn_keep_aspect_ratio
+            dst_height: 640
+            dst_width: 640
+          - type: padding
+            size: 640
+            pad_type: right_bottom
+
+        postprocessing:
+          - type: faster_rcnn_postprocessing_resize
+            dst_height: 640
+            dst_width: 640
+          - type: filter
+            apply_to: prediction
+            min_confidence: 0.001
+            remove_filtered: True
+
+        metrics:
+          - type: map
+            integral: 11point
+            ignore_difficult: true
+            presenter: print_scalar
+          - type: coco_precision
+            max_detections: 100
+            threshold: 0.5
+
+
+global_definitions: dataset_definitions.yml
